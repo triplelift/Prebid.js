@@ -67,30 +67,44 @@ export const tripleliftAdapterSpec = {
   },
 
   getUserSyncs: function(syncOptions, responses, gdprConsent, usPrivacy) {
+    let endpoints;
     let syncType = _getSyncType(syncOptions);
     if (!syncType) return;
 
     let syncEndpoint = 'https://eb2.3lift.com/sync?';
 
     if (syncType === 'image') {
-      syncEndpoint = utils.tryAppendQueryString(syncEndpoint, 'px', 1);
-      syncEndpoint = utils.tryAppendQueryString(syncEndpoint, 'src', 'prebid');
+      endpoints = _buildImageSyncUrls(syncEndpoint)
+    } else {
+      endpoints = [syncEndpoint];
     }
+    return endpoints.map(endpoint => {
+      if (consentString !== null) {
+        endpoint = utils.tryAppendQueryString(endpoint, 'gdpr', gdprApplies);
+        endpoint = utils.tryAppendQueryString(endpoint, 'cmp_cs', consentString);
+        if (usPrivacy) {
+          endpoint = utils.tryAppendQueryString(endpoint, 'us_privacy', usPrivacy);
+        }
+      }
 
-    if (consentString !== null) {
-      syncEndpoint = utils.tryAppendQueryString(syncEndpoint, 'gdpr', gdprApplies);
-      syncEndpoint = utils.tryAppendQueryString(syncEndpoint, 'cmp_cs', consentString);
-    }
-
-    if (usPrivacy) {
-      syncEndpoint = utils.tryAppendQueryString(syncEndpoint, 'us_privacy', usPrivacy);
-    }
-
-    return [{
-      type: syncType,
-      url: syncEndpoint
-    }];
+      return {
+        type: syncType,
+        url: endpoint,
+      }
+    });
   }
+}
+
+function _buildImageSyncUrls(syncEndpoint) {
+  const userSyncsLimit = 5;
+  const endpoints = [];
+  for (let i = 1; i <= userSyncsLimit; i++) {
+    let endpoint = utils.tryAppendQueryString(syncEndpoint, 'px', i);
+    endpoint = utils.tryAppendQueryString(endpoint, 'src', 'prebid');
+    endpoints.push(endpoint);
+    endpoint = '';
+  }
+  return endpoints;
 }
 
 function _getSyncType(syncOptions) {

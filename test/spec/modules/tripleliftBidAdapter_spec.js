@@ -404,7 +404,6 @@ describe('triplelift adapter', function () {
 
   describe('getUserSyncs', function() {
     let expectedIframeSyncUrl = 'https://eb2.3lift.com/sync?gdpr=true&cmp_cs=' + GDPR_CONSENT_STR + '&';
-    let expectedImageSyncUrl = 'https://eb2.3lift.com/sync?px=1&src=prebid&gdpr=true&cmp_cs=' + GDPR_CONSENT_STR + '&';
 
     it('returns undefined when syncing is not enabled', function() {
       expect(tripleliftAdapterSpec.getUserSyncs({})).to.equal(undefined);
@@ -420,13 +419,27 @@ describe('triplelift adapter', function () {
       expect(result[0].url).to.equal(expectedIframeSyncUrl);
     });
 
-    it('returns image user sync pixel when iframe syncing is disabled', function() {
+    it('returns five image user sync pixels when iframe syncing is disabled', function() {
+      let expectedImageSyncUrl1 = 'https://eb2.3lift.com/sync?px=1&src=prebid&gdpr=true&cmp_cs=' + GDPR_CONSENT_STR + '&';
+      let expectedImageSyncUrl2 = 'https://eb2.3lift.com/sync?px=2&src=prebid&gdpr=true&cmp_cs=' + GDPR_CONSENT_STR + '&';
+      let expectedImageSyncUrl3 = 'https://eb2.3lift.com/sync?px=3&src=prebid&gdpr=true&cmp_cs=' + GDPR_CONSENT_STR + '&';
+      let expectedImageSyncUrl4 = 'https://eb2.3lift.com/sync?px=4&src=prebid&gdpr=true&cmp_cs=' + GDPR_CONSENT_STR + '&';
+      let expectedImageSyncUrl5 = 'https://eb2.3lift.com/sync?px=5&src=prebid&gdpr=true&cmp_cs=' + GDPR_CONSENT_STR + '&';
       let syncOptions = {
         pixelEnabled: true
       };
-      let result = tripleliftAdapterSpec.getUserSyncs(syncOptions);
-      expect(result[0].type).to.equal('image')
-      expect(result[0].url).to.equal(expectedImageSyncUrl);
+      let results = tripleliftAdapterSpec.getUserSyncs(syncOptions);
+
+      expect(results[0].type).to.equal('image');
+      expect(results[0].url).to.equal(expectedImageSyncUrl1);
+      expect(results[1].type).to.equal('image');
+      expect(results[1].url).to.equal(expectedImageSyncUrl2);
+      expect(results[2].type).to.equal('image');
+      expect(results[2].url).to.equal(expectedImageSyncUrl3);
+      expect(results[3].type).to.equal('image');
+      expect(results[3].url).to.equal(expectedImageSyncUrl4);
+      expect(results[4].type).to.equal('image');
+      expect(results[4].url).to.equal(expectedImageSyncUrl5);
     });
 
     it('returns iframe user sync pixel when both options are enabled', function() {
